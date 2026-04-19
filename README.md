@@ -68,9 +68,14 @@ First launch on a new device: Settings → General → VPN & Device Management �
 
 ### Iterating from Linux (no Mac, no USB)
 
-If you edit from a non-Mac machine and still want the iPad to pick up new
-builds, ship the game as a PWA from any static host and add it to the home
-screen once. See [`PWA.md`](PWA.md) for the full write-up.
+The live deploy is a PWA at **[chibi.halilk.com](https://chibi.halilk.com/)**. Push to `main` triggers `.github/workflows/deploy.yml`, which builds `web/` and ships it to Cloudflare Pages. About 45 seconds end-to-end. Next launch of the iPad home-screen icon pulls the fresh version.
+
+**Install as a PWA:**
+- **iPad/iPhone**: open in Safari → Share → *Add to Home Screen*. Launches standalone, full screen, no browser chrome.
+- **Android**: open in Chrome → install prompt appears, or menu → *Install app*.
+- Updates propagate on next launch automatically (network-first service worker; offline works from last cache).
+
+See [`PWA.md`](PWA.md) for the original design notes, and [`CLAUDE.md`](CLAUDE.md) for the full hosting + CI/CD docs.
 
 ## How the build works
 
