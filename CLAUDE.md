@@ -116,7 +116,47 @@ This script automatically:
 Settings > General > VPN & Device Management > tap your developer profile > Trust
 
 ### Shipping from Linux (no macOS, no USB)
-The native-app path requires macOS. When iterating from a Linux machine, ship as a PWA instead — see [`PWA.md`](PWA.md) for the recipe (manifest, service worker, `<head>` tags, host picks, iPad Add-to-Home-Screen, offline-cache versioning). Same `web/` bundle, hosted on a static CDN, pinned to the iPad's home screen by the daughter's parent.
+The native-app path requires macOS. When iterating from a Linux machine, ship as a PWA instead — see [`PWA.md`](PWA.md) for the original recipe. The live PWA deploy is described below.
+
+## Web deploy (Cloudflare Pages → chibi.halilk.com)
+
+The game ships as a PWA to `chibi.halilk.com`, served by **Cloudflare Pages** from this repo.
+
+### Why Cloudflare Pages (not GitHub Pages under halilk.com/chibi/)
+Decoupling. The blog at halilk.com and the game are two independent projects with separate deploy cadences. CF Pages lets this repo own its build and its URL; pushing to `main` ships the game without touching the blog repo. Same CF edge cache, same TLS, same DNS zone (halilk.com is delegated to Cloudflare DNS).
+
+### Project layout
+- `web-assets/` — PWA assets (source of truth): `manifest.json`, `sw.js`, `icon-{180,192,512,512-maskable}.png`. `build-web.sh` copies them verbatim into `web/`.
+- `web/` — build artifact. Committed for convenience but always regenerable.
+- `game.src.html` `<head>` includes `<link rel="manifest">`, apple-mobile-web-app meta tags, `apple-touch-icon`, and a `navigator.serviceWorker.register('./sw.js')` snippet.
+- `sw.js` uses a **network-first** strategy: every fetch tries the network, caches the response, falls back to cache only when offline. Updates land on the next launch automatically — no cache-version bumping needed. Offline still works from the last cached launch.
+
+### CI/CD
+Cloudflare Pages is wired to this repo. On every push to `main`:
+1. CF runs `bash build-web.sh`
+2. Output directory `web/` is deployed to the CF edge
+3. `chibi.halilk.com` serves the new version within ~30–60s
+4. iPad/iPhone/Android PWA fetches fresh on next home-screen launch
+
+### Initial setup (one-time, already done)
+```bash
+wrangler pages project create chibi-runner --production-branch main
+wrangler pages deploy web --project-name=chibi-runner --branch=main
+```
+Custom domain (`chibi.halilk.com`) was added in CF dashboard → Workers & Pages → chibi-runner → Custom domains. CF automatically creates the CNAME in the halilk.com zone and provisions the TLS certificate.
+
+### Manual redeploy (if needed)
+```bash
+./build-web.sh
+wrangler pages deploy web --project-name=chibi-runner --branch=main
+```
+Normally not needed — git push to main handles it.
+
+### CF project identifiers
+- **Project:** `chibi-runner`
+- **Preview URL:** `https://chibi-runner.pages.dev` (always points at latest production deploy)
+- **Custom domain:** `https://chibi.halilk.com`
+- **Account ID:** `d22d4830228d45415d221689995d6e29`
 
 ## Known Issues & Workarounds
 
