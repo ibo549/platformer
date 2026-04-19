@@ -206,7 +206,7 @@ renderer.setSize(internal.w, internal.h, false);
 renderer.setPixelRatio(1);
 renderer.setClearColor(0xff7e5f);
 canvas.style.width = '100vw';
-canvas.style.height = '100vh';
+canvas.style.height = '100dvh';  // dynamic viewport: excludes Safari browser chrome
 
 const scene = new THREE.Scene();
 const camH = 10;
