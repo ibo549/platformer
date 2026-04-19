@@ -59,9 +59,34 @@ let jumpPressed = false;
 
 // ─── Audio (Web Audio API chiptune) ───
 let audioCtx = null;
+let audioUnlocked = false;
+let speechPrimed = false;
 function ensureAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
+  // iOS Safari quirk: play a silent buffer inside the user-gesture handler
+  // to fully unlock the audio context (resume() alone isn't enough).
+  if (!audioUnlocked) {
+    try {
+      const buf = audioCtx.createBuffer(1, 1, 22050);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(audioCtx.destination);
+      src.start(0);
+      audioUnlocked = true;
+    } catch (_) {}
+  }
+  // iOS Safari quirk: speechSynthesis needs a "primer" utterance spoken
+  // inside the user gesture, and getVoices() must be called at least once.
+  if (!speechPrimed && window.speechSynthesis) {
+    try {
+      speechSynthesis.getVoices();
+      const u = new SpeechSynthesisUtterance(' ');
+      u.volume = 0;
+      speechSynthesis.speak(u);
+      speechPrimed = true;
+    } catch (_) {}
+  }
 }
 
 function playTone(freq, duration, type = 'square', vol = 0.15) {
