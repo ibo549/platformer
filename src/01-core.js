@@ -16,12 +16,13 @@ const NORM_H = 410;
 
 // ─── Pixel scale ───
 // Render at reduced resolution, upscale with nearest-neighbor CSS.
-// Target internal height lands on clean integer multiples of physical pixels.
+// Must be an integer so the CSS upscale from backing to display is clean.
+// Fractional values (e.g. 3/dpr when dpr=2 = 1.5) produce uneven pixel widths.
 function getPixelScale() {
   const dpr = window.devicePixelRatio || 1;
   const physH = window.innerHeight * dpr;
-  if (physH >= 2000) return 6 / dpr;  // retina iPad / iPhone portrait
-  return 3 / dpr;                       // iPhone landscape
+  const raw = physH >= 2000 ? 6 / dpr : 3 / dpr;
+  return Math.max(1, Math.round(raw));
 }
 let PIXEL_SCALE = getPixelScale();
 
