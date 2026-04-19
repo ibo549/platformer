@@ -24,6 +24,15 @@ jobs:
       - name: Install Wrangler
         run: npm install -g wrangler@4
 
+      - name: Debug token via curl
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "=== verify ==="
+          curl -sS "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 300; echo
+          echo "=== project read ==="
+          curl -sS "https://api.cloudflare.com/client/v4/accounts/d22d4830228d45415d221689995d6e29/pages/projects/chibi-runner" -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 300; echo
+
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
