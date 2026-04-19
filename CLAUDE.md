@@ -34,13 +34,12 @@ platformer/
 ├── build.sh               # Concats src/*.js + inlines sprite data-URLs → game.html (iOS bundle)
 ├── build-web.sh           # Concats src/*.js + copies external sprites → web/ (static web bundle)
 ├── optimize_sprites.py    # Crop + repack + pngquant + WebP. Rebuilds sprites/*.b64 and *.webp
-├── sprites/               # Base64 data-URLs embedded into game.html at build time (iOS only)
-│   ├── halil.b64
-│   ├── lara.b64
-│   └── karolcia.b64
-├── halil.png / halil.webp       # Paletted PNG + lossless WebP (packed, ~200 KB / ~150 KB each)
-├── lara.png  / lara.webp
-├── karolcia.png / karolcia.webp
+├── sprites/               # All character art lives here. Three files per character.
+│   ├── halil.png          # Paletted PNG (packed to content band, ~200 KB)
+│   ├── halil.webp         # Lossless WebP (~150 KB) — used by web build AND inlined for iOS
+│   ├── halil.b64          # WebP base64 data-URL, embedded into game.html by build.sh
+│   ├── lara.{png,webp,b64}
+│   └── karolcia.{png,webp,b64}
 ├── web/                   # Output of build-web.sh — upload this directory to any static host
 │   ├── index.html         # ~110 KB (HTML + CSS + inlined JS; no sprite data)
 │   ├── halil.webp         # External sprite, loaded on character select
@@ -58,9 +57,7 @@ platformer/
         ├── GameViewController.swift   # WKWebView loading game.html
         ├── Info.plist
         ├── Resources/                 # Game files (copied flat into .app bundle)
-        │   ├── game.html              # AUTO-COPIED from root by deploy.sh — do NOT edit directly
-        │   ├── halil.png
-        │   └── lara.png
+        │   └── game.html              # AUTO-COPIED from root by deploy.sh — do NOT edit directly
         └── Assets/                    # Generated icons and splash images
             ├── AppIcon1024.png
             ├── AppIcon180.png / 167 / 152 / 120 / 76
@@ -209,7 +206,7 @@ python3 generate_splash.py lara     # Regenerates splash screen (halil, lara, or
 
 - **Format:** PNG, 1536x1024 pixels (same as existing sheets)
 - **Layout:** 6 frames arranged left-to-right in a single row: idle, run1, run2, jump, fall, land/crouch
-- **Naming:** `<name>.png` in the project root (lowercase, e.g. `mario.png`)
+- **Naming:** `<name>.png` placed in `sprites/` (lowercase, e.g. `sprites/mario.png`)
 - **Orientation:** Character should face RIGHT. If your art faces left, set `mirror: true` in `characterData` and the engine will flip it
 - **Background:** Transparent (alpha channel). The character is rendered as a textured plane with `alphaTest: 0.1`
 - 4 extra run frames (contact/push-off variants) are auto-generated at load time from run1 and run2 via `deriveRunFrame()` — no need to draw them
@@ -265,18 +262,17 @@ Add a new `<div>` inside `<div class="char-select">`:
 </div>
 ```
 
-#### 4. Create the base64 sprite file
+#### 4. Drop the source sheet into `sprites/` and run the optimizer
 
 ```bash
 cd ~/Desktop/platformer
-python3 -c "
-import base64
-with open('newchar.png', 'rb') as f:
-    b64 = base64.b64encode(f.read()).decode()
-with open('sprites/newchar.b64', 'w') as f:
-    f.write('data:image/png;base64,' + b64)
-"
+cp ~/Downloads/newchar.png sprites/newchar.png
+# Add newchar to the CHARS dict in optimize_sprites.py (contentTop/Bottom + crops).
+./optimize_sprites.py
 ```
+
+This writes `sprites/newchar.png` (paletted), `sprites/newchar.webp` (lossless WebP),
+and `sprites/newchar.b64` (base64 data URL of whichever's smaller).
 
 #### 5. Add placeholder to `build.sh`
 
@@ -332,9 +328,9 @@ Both run on macOS and Linux (plain Python 3, no macOS-specific tools).
 
 - `src/*.js` — modular source code (17 files, split by concern).
 - `game.src.html` — HTML + CSS shell with `{{GAME_JS}}` and sprite placeholders.
-- `sprites/*.b64` — WebP sprites base64-encoded with `data:image/webp;base64,...` prefix (iOS path only).
-- `<name>.png` — source sheet for character (paletted PNG, also used by `generate_icon.py` and `generate_splash.py`).
-- `<name>.webp` — same sheet as lossless WebP (used by iOS bundle and web bundle alike).
+- `sprites/<name>.png` — packed, paletted source sheet (used by `generate_icon.py` and `generate_splash.py`).
+- `sprites/<name>.webp` — same sheet as lossless WebP (used by both builds — web serves it directly, iOS reads it into a data URL).
+- `sprites/<name>.b64` — WebP base64-encoded with `data:image/webp;base64,...` prefix (iOS inline path only).
 - `game.html` and `web/*` — build artifacts, committed for convenience but always regenerable from source.
 - `deploy.sh` calls `build.sh` automatically before the Xcode build.
 

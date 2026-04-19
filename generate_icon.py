@@ -1,24 +1,26 @@
 from PIL import Image, ImageDraw, ImageFilter
 import random, sys
 
-# Character data matching game.src.html characterData
+# Character data — crops point at the idle frame on the packed sprite sheets
+# (the ones optimize_sprites.py writes to sprites/). Each packed sheet has the
+# idle frame at x=0 and is cropped vertically to the character's content band.
 CHARACTERS = {
     'halil': {
-        'file': 'halil.png',
-        'crop_x': 55, 'crop_w': 200,
-        'content_top': 308, 'content_bottom': 668,
+        'file': 'sprites/halil.png',
+        'crop_x': 0, 'crop_w': 200,
+        'content_top': 0, 'content_bottom': 360,
         'mirror': False,
     },
     'lara': {
-        'file': 'lara.png',
-        'crop_x': 30, 'crop_w': 210,
-        'content_top': 302, 'content_bottom': 709,
+        'file': 'sprites/lara.png',
+        'crop_x': 0, 'crop_w': 210,
+        'content_top': 0, 'content_bottom': 407,
         'mirror': False,
     },
     'karolcia': {
-        'file': 'karolcia.png',
-        'crop_x': 70, 'crop_w': 200,
-        'content_top': 342, 'content_bottom': 683,
+        'file': 'sprites/karolcia.png',
+        'crop_x': 0, 'crop_w': 200,
+        'content_top': 0, 'content_bottom': 341,
         'mirror': True,
     },
 }

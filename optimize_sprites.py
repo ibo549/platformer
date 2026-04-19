@@ -86,7 +86,7 @@ def crop_and_repack(name, spec):
     If <name>.png is already the packed sheet from a previous run, fall back to
     reading frame widths off it (contentBottom - contentTop becomes 0 -> new_h).
     """
-    src_path = ROOT / f'{name}.png'
+    src_path = ROOT / 'sprites' / f'{name}.png'
     if not src_path.exists():
         return None, None
     src = Image.open(src_path).convert('RGBA')
@@ -154,8 +154,8 @@ def main():
             print(f'  skip {name}: no source PNG', file=sys.stderr)
             continue
 
-        png_path = ROOT / f'{name}.png'
-        webp_path = ROOT / f'{name}.webp'
+        png_path = ROOT / 'sprites' / f'{name}.png'
+        webp_path = ROOT / 'sprites' / f'{name}.webp'
         b64_path = ROOT / 'sprites' / f'{name}.b64'
 
         # Write the cropped/packed sheet as PNG (truecolor)

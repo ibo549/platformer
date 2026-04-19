@@ -37,15 +37,15 @@ SPRITES = {
 
 def pick_sprite(name):
     """Return path to preferred sprite file (.webp if available, else .png)."""
-    webp = ROOT / f'{name}.webp'
-    png = ROOT / f'{name}.png'
+    webp = ROOT / 'sprites' / f'{name}.webp'
+    png = ROOT / 'sprites' / f'{name}.png'
     if webp.exists():
         return webp
     if png.exists():
         print(f'  WARNING: {webp.name} missing, falling back to {png.name} '
               f'(run optimize_sprites.py for smaller assets)', file=sys.stderr)
         return png
-    print(f'ERROR: no {webp.name} or {png.name} in repo root', file=sys.stderr)
+    print(f'ERROR: no {webp.name} or {png.name} in sprites/', file=sys.stderr)
     sys.exit(1)
 
 

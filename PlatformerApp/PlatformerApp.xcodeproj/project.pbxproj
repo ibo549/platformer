@@ -10,8 +10,6 @@
 		A1000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001 /* AppDelegate.swift */; };
 		A1000002 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000002 /* GameViewController.swift */; };
 		A1000011 /* game.html in Resources */ = {isa = PBXBuildFile; fileRef = A2000011 /* game.html */; };
-		A1000012 /* spritesheet.png in Resources */ = {isa = PBXBuildFile; fileRef = A2000012 /* spritesheet.png */; };
-		A1000013 /* lara.png in Resources */ = {isa = PBXBuildFile; fileRef = A2000013 /* lara.png */; };
 		/* Assets.xcassets removed - actool hangs */
 		/* LaunchScreen.storyboard removed from build - ibtool hangs */
 /* End PBXBuildFile section */
@@ -21,8 +19,6 @@
 		A2000002 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		A2000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A2000011 /* game.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = game.html; sourceTree = "<group>"; };
-		A2000012 /* spritesheet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = spritesheet.png; sourceTree = "<group>"; };
-		A2000013 /* lara.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = lara.png; sourceTree = "<group>"; };
 		A2000020 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		/* LaunchScreen.storyboard removed - ibtool hangs */
 		A2000099 /* PlatformerApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlatformerApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,8 +68,6 @@
 			isa = PBXGroup;
 			children = (
 				A2000011 /* game.html */,
-				A2000012 /* spritesheet.png */,
-				A2000013 /* lara.png */,
 			);
 			name = GameAssets;
 			path = Resources;
@@ -133,8 +127,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1000011 /* game.html in Resources */,
-				A1000012 /* spritesheet.png in Resources */,
-				A1000013 /* lara.png in Resources */,
 				/* Assets.xcassets removed - actool hangs */
 				/* LaunchScreen.storyboard removed - ibtool hangs */
 			);
