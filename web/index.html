@@ -14,15 +14,27 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
   }
-  // Best-effort landscape lock on mobile. Works on Android/Chrome in fullscreen;
-  // iOS Safari ignores it silently (user relies on the rotate-prompt overlay there).
-  function tryLockLandscape() {
+  // Best-effort: on first user gesture, if we're in landscape on a touch device,
+  // request fullscreen (hides browser chrome) and lock the orientation.
+  // Android Chrome: both succeed. iPad/iPhone Safari 16.4+: fullscreen partially
+  // supported, orientation lock silently no-ops. Everyone else: user installs
+  // the PWA to home screen and gets true standalone full-screen.
+  function tryFullscreenLandscape() {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    if (!isTouch || !isLandscape) return;
+    const el = document.documentElement;
+    const fs = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (fs) {
+      const p = fs.call(el, { navigationUI: 'hide' });
+      if (p && p.catch) p.catch(() => {});
+    }
     if (screen.orientation && screen.orientation.lock) {
       screen.orientation.lock('landscape').catch(() => {});
     }
   }
-  document.addEventListener('click', tryLockLandscape, { once: true });
-  document.addEventListener('touchend', tryLockLandscape, { once: true });
+  document.addEventListener('click', tryFullscreenLandscape, { once: true });
+  document.addEventListener('touchend', tryFullscreenLandscape, { once: true });
 </script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
