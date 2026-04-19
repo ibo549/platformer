@@ -132,31 +132,39 @@ Decoupling. The blog at halilk.com and the game are two independent projects wit
 - `sw.js` uses a **network-first** strategy: every fetch tries the network, caches the response, falls back to cache only when offline. Updates land on the next launch automatically — no cache-version bumping needed. Offline still works from the last cached launch.
 
 ### CI/CD
-Cloudflare Pages is wired to this repo. On every push to `main`:
-1. CF runs `bash build-web.sh`
-2. Output directory `web/` is deployed to the CF edge
-3. `chibi.halilk.com` serves the new version within ~30–60s
-4. iPad/iPhone/Android PWA fetches fresh on next home-screen launch
+Deploys run via **GitHub Actions** (`.github/workflows/deploy.yml`), not CF's native Git integration. Reason: the project was initially created via Direct Upload (`wrangler pages project create`), and CF doesn't let you convert a Direct Upload project to Git-integrated after the fact. Actions + `wrangler pages deploy` is the clean path and keeps the repo portable across hosts.
 
-### Initial setup (one-time, already done)
-```bash
-wrangler pages project create chibi-runner --production-branch main
-wrangler pages deploy web --project-name=chibi-runner --branch=main
-```
-Custom domain (`chibi.halilk.com`) was added in CF dashboard → Workers & Pages → chibi-runner → Custom domains. CF automatically creates the CNAME in the halilk.com zone and provisions the TLS certificate.
+On every push to `main`:
+1. Workflow checks out the repo
+2. Runs `python3 build-web.sh` (sprites, concatenated JS, PWA assets)
+3. `cloudflare/wrangler-action@v3` uploads `web/` to CF Pages
+4. `chibi.halilk.com` serves the new version within ~25-45s
+5. Every PWA (iPad/iPhone/Android home-screen icon) pulls fresh on next launch (network-first service worker)
+
+### Secrets
+- **`CLOUDFLARE_API_TOKEN`** (repo secret, required by workflow): token with **"Edit Cloudflare Workers"** template scope. Narrow enough that if leaked, it can only touch Pages/Workers on this account — no DNS, no billing, no other projects. Set via:
+  ```bash
+  gh secret set CLOUDFLARE_API_TOKEN --repo ibo549/platformer --body "cfut_..."
+  ```
+  Don't pipe via `printf ... | gh secret set --body -` — silent newline/encoding issues caused a 9106 auth failure the first time around. Pass the literal string as `--body "..."`.
+
+### Custom domain
+`chibi.halilk.com` is a CNAME → `chibi-runner.pages.dev` (proxied, orange cloud) in the halilk.com Cloudflare DNS zone. Added once via the CF API (not wrangler CLI, which doesn't expose domain management). GoDaddy only owns the registration — DNS is fully delegated to Cloudflare.
 
 ### Manual redeploy (if needed)
 ```bash
 ./build-web.sh
-wrangler pages deploy web --project-name=chibi-runner --branch=main
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=d22d4830228d45415d221689995d6e29 \
+  wrangler pages deploy web --project-name=chibi-runner --branch=main
 ```
-Normally not needed — git push to main handles it.
+Normally unnecessary — `git push` handles it.
 
 ### CF project identifiers
 - **Project:** `chibi-runner`
-- **Preview URL:** `https://chibi-runner.pages.dev` (always points at latest production deploy)
+- **Preview URL:** `https://chibi-runner.pages.dev` (production is whatever's latest on `main`)
 - **Custom domain:** `https://chibi.halilk.com`
 - **Account ID:** `d22d4830228d45415d221689995d6e29`
+- **halilk.com zone tag:** `c46846a7d84edb043bb47269a788fbf0`
 
 ## Known Issues & Workarounds
 
@@ -178,6 +186,22 @@ Normally not needed — git push to main handles it.
 
 ### DDI not found by devicectl
 **Fix:** Use `pymobiledevice3 mounter auto-mount` instead of `devicectl manage ddis update`.
+
+### iOS Safari: silent audio and speech (WebAudio + speechSynthesis)
+**Problem:** Safari's AudioContext starts suspended and needs a silent-buffer "unlock" inside the user-gesture handler. `resume()` alone isn't enough. Separately, `speechSynthesis.speak()` is silent until primed with a silent utterance during a user gesture.
+**Fix:** In `ensureAudio()` (`src/01-core.js`), after creating the context, play a 1-frame silent buffer AND speak an empty utterance. Both gated by module-level flags so they only run once. Chrome ignores this harmlessly.
+
+### Landscape lock silently fails on iOS Safari
+**Problem:** `screen.orientation.lock('landscape')` is unimplemented on iOS Safari (on both iPhone and iPad). Android Chrome in fullscreen honors it.
+**Fix:** Attempt the lock anyway (it silently rejects on iOS), AND show a CSS-driven `#rotate-prompt` overlay on portrait-phone-sized touch devices. Overlay auto-hides via `@media (orientation: landscape)`. Manifest `"orientation": "landscape"` handles PWA-launched instances.
+
+### iPhone Safari always shows browser chrome (URL bar + tab bar)
+**Problem:** iPhone Safari doesn't expose Fullscreen API for non-video elements. Even in landscape, URL bar + tab bar eat vertical space. `100vh` overflows beyond the visible area, clipping the bottom mobile controls.
+**Fix:** Canvas uses `height: 100dvh` (dynamic viewport height) so it shrinks when Safari chrome is visible. A one-time "Add to Home Screen" hint shows on iPhone Safari (detected via UA + `navigator.standalone === false`) to nudge PWA install, which is the only real escape from browser chrome on iOS.
+
+### Canvas upscale pixelation on fractional DPR
+**Problem:** `PIXEL_SCALE = 3 / dpr` gave `1.5` on HiDPI (dpr=2) screens. Non-integer CSS upscale + `image-rendering: pixelated` produces uneven pixel widths ("jaggies").
+**Fix:** `getPixelScale()` rounds to the nearest integer. `Math.max(1, Math.round(raw))`. Keeps pixel-art integer-scale clean on all device pixel ratios.
 
 ## Key Identifiers
 

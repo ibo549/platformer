@@ -2,7 +2,10 @@
 
 A tiny pixel-art platformer I built with my daughter. We picked the characters, the enemies, the sound effects, and argued about whether strawberries should say "GAW GAW." (They do.)
 
-Runs in a browser or as a standalone iPad / iPhone app via a WKWebView wrapper.
+**Play it:** [chibi.halilk.com](https://chibi.halilk.com/) — installable as a PWA on iPad / iPhone / Android.
+**Full story:** [halilk.com/journal/gaw-gaw-and-the-jumping-poops/](https://halilk.com/journal/gaw-gaw-and-the-jumping-poops/)
+
+Runs in a browser, as an installed PWA on any mobile home screen, or as a standalone iPad / iPhone app via a WKWebView wrapper.
 
 ## The game
 
@@ -90,6 +93,8 @@ Sprite embedding matters: WKWebView treats images loaded from `file://` as cross
 ## Layout
 
 ```
+.github/workflows/deploy.yml   GitHub Actions workflow: push to main → Cloudflare Pages
+web-assets/              PWA source: manifest.json, sw.js, icon-{180,192,512,512-maskable}.png
 src/                     editable JS modules — 17 small files, each focused on one concern
   01-core.js               constants, state, audio, three.js setup, material/geo pools
   02-bubble.js             speech-bubble factory
@@ -116,10 +121,12 @@ sprites/*.b64            per-character sprite data URLs
 {halil,lara,karolcia}.png   source art (cropped to content bands)
 serve.sh                 local dev: build + browser + server
 deploy.sh                build + install on USB device
+build-web.sh             builds the web PWA bundle (external sprites, manifest, sw.js)
 PlatformerApp/           Xcode wrapper (WKWebView)
 generate_icon.py         regenerate app icons from a character
 generate_splash.py       regenerate splash screens from a character
 CLAUDE.md                detailed notes, known issues, character-add guide
+PWA.md                   PWA design notes (original recipe)
 ```
 
 ## Adding a character
