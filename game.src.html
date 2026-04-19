@@ -35,11 +35,55 @@
   }
   document.addEventListener('click', tryFullscreenLandscape, { once: true });
   document.addEventListener('touchend', tryFullscreenLandscape, { once: true });
+
+  // Show "Add to Home Screen" hint on iPhone Safari only. Skip if already
+  // launched as PWA (navigator.standalone) or if in Chrome/Firefox on iOS.
+  (function () {
+    const ua = navigator.userAgent;
+    const isiPhoneSafari = /iPhone/i.test(ua) && !/CriOS|FxiOS|EdgiOS/i.test(ua);
+    const isPWA = window.navigator.standalone === true;
+    if (isiPhoneSafari && !isPWA) {
+      setTimeout(() => {
+        const el = document.getElementById('install-hint');
+        if (el) el.style.display = 'block';
+        setTimeout(() => { if (el) el.style.display = 'none'; }, 12000);
+      }, 2500);
+    }
+  })();
 </script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* iPhone Safari install hint. Shown only on iPhone Safari, not in PWA. */
+  #install-hint {
+    display: none;
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15,12,41,0.92);
+    color: #ffe066;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,224,102,0.35);
+    border-radius: 8px;
+    font-size: 10px;
+    font-family: 'Press Start 2P', monospace;
+    letter-spacing: 0.5px;
+    z-index: 99998;
+    max-width: 92vw;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  #install-hint .dismiss {
+    display: inline-block;
+    margin-left: 10px;
+    opacity: 0.6;
+    cursor: pointer;
+    padding: 2px 6px;
+  }
 
   /* Portrait prompt: shown only on phone-sized touch devices in portrait. */
   #rotate-prompt {
@@ -526,6 +570,10 @@
 <div id="rotate-prompt">
   <div class="icon">📱</div>
   <div class="msg">ROTATE YOUR DEVICE TO LANDSCAPE TO PLAY</div>
+</div>
+
+<div id="install-hint">
+  FOR FULL SCREEN: SHARE → ADD TO HOME SCREEN<span class="dismiss" onclick="document.getElementById('install-hint').style.display='none'">✕</span>
 </div>
 
 <div id="start-screen">
