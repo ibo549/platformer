@@ -26,6 +26,7 @@ ROOT = pathlib.Path(__file__).resolve().parent
 SRC_DIR = ROOT / 'src'
 WEB_DIR = ROOT / 'web'
 GAME_SRC = ROOT / 'game.src.html'
+WEB_ASSETS = ROOT / 'web-assets'  # manifest, icons — copied verbatim into web/
 
 # Sprite placeholders and their source filename (without extension)
 SPRITES = {
@@ -87,11 +88,24 @@ def main():
     out_html = WEB_DIR / 'index.html'
     out_html.write_text(html)
 
-    # 4) Report sizes
+    # 4) Copy PWA assets (manifest, icons) verbatim
+    pwa_items = []
+    if WEB_ASSETS.exists():
+        for p in sorted(WEB_ASSETS.iterdir()):
+            if p.is_file():
+                dest = WEB_DIR / p.name
+                shutil.copy2(p, dest)
+                pwa_items.append(p.name)
+
+    # 5) Report sizes
     total = out_html.stat().st_size
     items = [('index.html', out_html.stat().st_size)]
     for name in SPRITES.values():
         path = WEB_DIR / pick_sprite(name).name
+        items.append((path.name, path.stat().st_size))
+        total += path.stat().st_size
+    for name in pwa_items:
+        path = WEB_DIR / name
         items.append((path.name, path.stat().st_size))
         total += path.stat().st_size
 
