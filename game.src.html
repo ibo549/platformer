@@ -14,11 +14,54 @@
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
   }
+  // Best-effort landscape lock on mobile. Works on Android/Chrome in fullscreen;
+  // iOS Safari ignores it silently (user relies on the rotate-prompt overlay there).
+  function tryLockLandscape() {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('landscape').catch(() => {});
+    }
+  }
+  document.addEventListener('click', tryLockLandscape, { once: true });
+  document.addEventListener('touchend', tryLockLandscape, { once: true });
 </script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* Portrait prompt: shown only on phone-sized touch devices in portrait. */
+  #rotate-prompt {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0f0c29;
+    color: #ffe066;
+    font-family: 'Press Start 2P', monospace;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.5rem;
+    gap: 1.2rem;
+  }
+  #rotate-prompt .icon {
+    font-size: 3.5rem;
+    animation: rotateHint 2s ease-in-out infinite;
+  }
+  #rotate-prompt .msg {
+    font-size: 10px;
+    line-height: 1.8;
+    max-width: 280px;
+    color: #fff;
+  }
+  @keyframes rotateHint {
+    0%, 100% { transform: rotate(0deg); }
+    50%      { transform: rotate(-90deg); }
+  }
+  @media (orientation: portrait) and (pointer: coarse) and (max-width: 500px) {
+    #rotate-prompt { display: flex; }
+  }
 
   @keyframes shieldPulse {
     0%, 100% { opacity: 0.85; }
@@ -436,6 +479,11 @@
 </style>
 </head>
 <body>
+
+<div id="rotate-prompt">
+  <div class="icon">📱</div>
+  <div class="msg">ROTATE YOUR DEVICE TO LANDSCAPE TO PLAY</div>
+</div>
 
 <div id="start-screen">
   <h1>CHIBI RUNNER</h1>
