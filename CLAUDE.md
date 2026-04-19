@@ -115,6 +115,9 @@ This script automatically:
 ### First Launch on New Device
 Settings > General > VPN & Device Management > tap your developer profile > Trust
 
+### Shipping from Linux (no macOS, no USB)
+The native-app path requires macOS. When iterating from a Linux machine, ship as a PWA instead — see [`PWA.md`](PWA.md) for the recipe (manifest, service worker, `<head>` tags, host picks, iPad Add-to-Home-Screen, offline-cache versioning). Same `web/` bundle, hosted on a static CDN, pinned to the iPad's home screen by the daughter's parent.
+
 ## Known Issues & Workarounds
 
 ### Xcode 26 codesign "code object is not signed at all" for embedded.mobileprovision

@@ -66,6 +66,12 @@ Builds, signs, and installs to the USB-connected device. You'll need:
 
 First launch on a new device: Settings → General → VPN & Device Management → trust your developer profile.
 
+### Iterating from Linux (no Mac, no USB)
+
+If you edit from a non-Mac machine and still want the iPad to pick up new
+builds, ship the game as a PWA from any static host and add it to the home
+screen once. See [`PWA.md`](PWA.md) for the full write-up.
+
 ## How the build works
 
 The game code is split into ~17 small JS modules under `src/` — roughly 150-500 lines each, grouped by concern (audio, player, enemies, level, physics, etc.). `game.src.html` is the HTML + CSS shell with a `{{GAME_JS}}` placeholder.
