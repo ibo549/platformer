@@ -84,7 +84,8 @@ echo "✅ Icons added"
 echo ""
 echo "🔏 Re-signing..."
 xattr -c "$APP/embedded.mobileprovision"
-/usr/bin/codesign -d --entitlements /tmp/entitlements.plist "$APP" 2>/dev/null
+# Extract as plain plist XML (modern codesign rejects the legacy magic-wrapped blob).
+/usr/bin/codesign -d --xml --entitlements - "$APP" > /tmp/entitlements.plist 2>/dev/null
 /usr/bin/codesign --force --deep --sign "$CERT" \
     --entitlements /tmp/entitlements.plist \
     --timestamp=none --generate-entitlement-der "$APP"
