@@ -145,9 +145,9 @@
 
   .mobile-btn {
     pointer-events: all;
-    width: 104px; height: 104px;
-    background: rgba(20,20,40,0.55);
-    border: 3px solid rgba(255,255,255,0.45);
+    width: 88px; height: 88px;
+    background: rgba(20,20,40,0.28);
+    border: 3px solid rgba(255,255,255,0.35);
     border-radius: 24px;
     display: flex;
     align-items: center;
@@ -177,25 +177,39 @@
   }
 
   .jump-btn {
-    width: 120px;
-    height: 120px;
+    width: 104px;
+    height: 104px;
     border-radius: 50%;
     flex-direction: column;
-    gap: 2px;
-    border-color: rgba(255,200,80,0.7);
+    gap: 10px;
+    border-color: rgba(255,200,80,0.6);
     color: rgba(255,230,120,1);
-    background: rgba(70,45,10,0.55);
+    background: rgba(70,45,10,0.3);
   }
 
   .jump-btn .jump-arrow {
-    font-size: 30px;
-    line-height: 1;
+    width: 0; height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-bottom: 20px solid rgba(255,230,120,1);
   }
   .jump-btn .jump-label {
     font-family: 'Press Start 2P', monospace;
-    font-size: 10px;
-    letter-spacing: 1px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
     line-height: 1;
+  }
+
+  .mobile-btn .dpad-arrow {
+    width: 0; height: 0;
+    border-top: 16px solid transparent;
+    border-bottom: 16px solid transparent;
+  }
+  .mobile-btn.btn-left .dpad-arrow {
+    border-right: 22px solid rgba(255,255,255,0.95);
+  }
+  .mobile-btn.btn-right .dpad-arrow {
+    border-left: 22px solid rgba(255,255,255,0.95);
   }
 
   #start-screen {
@@ -614,11 +628,11 @@
 
 <div id="mobile-controls">
   <div class="dpad">
-    <div class="mobile-btn" id="btn-left">&#9668;</div>
-    <div class="mobile-btn" id="btn-right">&#9658;</div>
+    <div class="mobile-btn btn-left" id="btn-left"><span class="dpad-arrow"></span></div>
+    <div class="mobile-btn btn-right" id="btn-right"><span class="dpad-arrow"></span></div>
   </div>
   <div class="mobile-btn jump-btn" id="btn-jump">
-    <span class="jump-arrow">&#9650;</span>
+    <span class="jump-arrow"></span>
     <span class="jump-label">JUMP</span>
   </div>
 </div>
