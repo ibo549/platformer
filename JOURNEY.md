@@ -1,11 +1,11 @@
 # The Journey
 
-Chibi Runner was built in a long chain of weekend afternoons — Halil, his
-daughter, and Claude across many sessions. By the time any single session
-started, a new rule or a new enemy was usually already waiting: written on a
-napkin, drawn in crayon, or declared out loud and then defended against all
-counter-proposals. What follows is the game told as feature histories —
-each one, where it came from, and the tiny bit of code that made it so.
+Chibi Runner was built in a couple of hours one weekend. Halil, his daughter,
+and Claude, all in one go. As we went, a new rule or a new enemy kept showing
+up: written on a napkin, drawn in crayon, or declared out loud and then
+defended against all counter-proposals. What follows is the game told as
+feature histories. Each one, where it came from, and the tiny bit of code that
+made it so.
 
 ## The cast
 
