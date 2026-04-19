@@ -21,10 +21,11 @@ jobs:
       - name: Build web bundle
         run: python3 build-web.sh
 
+      - name: Install Wrangler
+        run: npm install -g wrangler@4
+
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: d22d4830228d45415d221689995d6e29
-          wranglerVersion: '4.78.0'
-          command: pages deploy web --project-name=chibi-runner --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d22d4830228d45415d221689995d6e29
+        run: wrangler pages deploy web --project-name=chibi-runner --branch=main --commit-dirty=true
