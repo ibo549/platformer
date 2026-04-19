@@ -141,19 +141,76 @@ Extend the "copy sprites to web/" step to also copy:
 Keep the source-of-truth copies in a `web-assets/` directory in the repo
 root so `web/` stays fully a build artifact.
 
-## Picking a host (all free for a project this size)
+## Hosting on Cloudflare Pages (under halilk.com)
 
-| Host | How to deploy | Works with private repo | Auto-deploy on push |
-|------|---|---|---|
-| Cloudflare Pages | Dashboard-connect the repo, set build command `bash build-web.sh`, output dir `web` | yes | yes |
-| Netlify CLI | `netlify deploy --dir=web --prod` | yes | optional |
-| Vercel CLI | `vercel deploy web --prod` | yes | optional |
-| GitHub Pages | Push `web/` to a `gh-pages` branch | needs public repo or Pro | yes |
-| Personal VPS | `rsync -az web/ user@host:/var/www/chibi/` | yes | no |
+`halilk.com` already lives on Cloudflare DNS, so the simplest path is a
+**new Cloudflare Pages project** bound to a subdomain of the site. Once
+it's wired up, every `git push` triggers a build and deploy — no CLI
+step from Linux, no extra credentials to manage.
 
-Cloudflare Pages is the most hands-off. Connect it once, and every
-`git push` from Linux triggers a deploy. Netlify/Vercel CLI are simpler
-if you don't want CI — one command from your shell ships it.
+### Pick a URL shape
+
+Two sensible options:
+
+- **Subdomain** — `chibi.halilk.com`. Clean scope, nothing to special-case
+  in `manifest.json` or the service worker. Recommended.
+- **Path** — `halilk.com/chibi/`. Keeps everything under one domain. You
+  need `"scope": "/chibi/"` and `"start_url": "/chibi/"` in the manifest,
+  and the service-worker registration has to use the `/chibi/sw.js`
+  absolute path. Also means the existing halilk.com deployment has to
+  proxy that path through to the Pages project.
+
+The rest of this doc assumes **subdomain**.
+
+### Wire it up (once)
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
+   **Connect to Git** → authorize `ibo549/platformer`.
+2. Set:
+   - **Production branch:** `main`
+   - **Build command:** `bash build-web.sh`
+   - **Build output directory:** `web`
+3. After the first build, go to the project's **Custom Domains** tab →
+   **Set up a custom domain** → enter `chibi.halilk.com`. Cloudflare
+   creates the CNAME in your zone automatically and provisions the TLS
+   cert.
+4. Test the project's default `*.pages.dev` URL while the DNS
+   propagates. Within a minute or two `chibi.halilk.com` is live.
+
+Because it lives on Cloudflare, you get the same edge caching, TLS, and
+Access controls your existing `halilk.com` setup already uses. If you
+ever want to fold a tiny server-side endpoint into the game (a
+highscore board, a daily challenge seed, anything), a Pages Function in
+`functions/api/*.ts` works the same way your Spotify last-played
+endpoint does — no separate Worker deploy needed.
+
+### Shipping updates
+
+From your Linux laptop:
+
+```bash
+# Edit src/ or game.src.html
+# Bump the cache version in web-assets/sw.js (v1 → v2)
+git commit -am "tweak enemy speed"
+git push
+```
+
+Cloudflare builds in ~30-60 seconds. The iPad picks up the new version
+on its next launch of the home-screen icon.
+
+### If you'd rather deploy manually
+
+Install Cloudflare's CLI (`wrangler`) on Arch and deploy straight from
+the shell without the git-triggered build:
+
+```bash
+npm i -g wrangler                    # or yay -S wrangler-bin
+wrangler pages deploy web --project-name=chibi-runner
+```
+
+Useful when you want to iterate without cluttering git history with
+"tweak" commits. The same project URL serves it, Cloudflare just treats
+it as a direct upload instead of a git-triggered build.
 
 ## Installing on the iPad
 
@@ -175,8 +232,9 @@ game works with zero connectivity as long as the cache holds.
 ```bash
 # 1. Change code in src/ or game.src.html
 # 2. Bump the sw.js cache version ('chibi-runner-v1' → 'v2')
-./build-web.sh
-netlify deploy --dir=web --prod     # or: git push, if CF Pages is wired
+git commit -am "..." && git push     # CF Pages auto-deploys
+# or, for direct upload without a commit:
+./build-web.sh && wrangler pages deploy web --project-name=chibi-runner
 ```
 
 The iPad pulls the new version on next launch (or with pull-to-refresh
